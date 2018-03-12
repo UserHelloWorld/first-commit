@@ -13,6 +13,7 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *lab;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (strong, nonatomic) dispatch_queue_t queue;
 
 @end
 static NSString *identifier = @"cell";
@@ -20,10 +21,49 @@ static NSString *identifier = @"cell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self globalQueue];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(ggg:) name:@"ddd" object:nil];
+    self.queue = dispatch_queue_create(NULL, NULL);
+
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [self aaa];
+    });
+    
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [self bbb];
+    });
+    
+    [self ccc];
+    
+    
 }
+
+- (void)aaa {
+    dispatch_sync(self.queue, ^{
+        for (int i = 1; i < 19; i ++) {
+            NSLog(@"aaa");
+            NSLog(@"%@",[NSThread currentThread]);
+        }
+    });
+}
+
+- (void)bbb {
+    dispatch_sync(self.queue, ^{
+        for (int i = 1; i < 19; i ++) {
+            NSLog(@"bbb");
+            NSLog(@"%@",[NSThread currentThread]);
+        }
+    });
+}
+
+- (void)ccc {
+    dispatch_sync(self.queue, ^{
+        for (int i = 1; i < 19; i ++) {
+            NSLog(@"ccc");
+            NSLog(@"%@",[NSThread currentThread]);
+        }
+    });
+}
+
 - (void)ggg:(NSNotification *)noti {
     NSLog(@"%s %@",__func__,[NSThread currentThread]);
     self.lab.text = noti.object;
@@ -44,7 +84,7 @@ static NSString *identifier = @"cell";
 }
 // 多少组
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
+    return 1; 
 }
 // cell
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
